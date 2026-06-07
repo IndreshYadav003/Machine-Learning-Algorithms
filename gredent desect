@@ -1,0 +1,179 @@
+from sklearn.datasets import make_regression
+from sklearn.linear_model import LinearRegression
+import numpy as np
+import matplotlib.pyplot as plt
+
+# =====================================================
+# Generate Dataset
+# =====================================================
+x, y = make_regression(
+    n_samples=4,
+    n_features=1,
+    n_informative=1,
+    n_targets=1,
+    noise=80,
+    random_state=13
+)
+
+# Plot Data
+plt.scatter(x, y)
+plt.title("Generated Dataset")
+plt.show()
+
+# =====================================================
+# Ordinary Least Squares (OLS)
+# =====================================================
+reg = LinearRegression()
+reg.fit(x, y)
+
+print("OLS Slope (m):", reg.coef_[0])
+print("OLS Intercept (b):", reg.intercept_)
+
+# Plot OLS Line
+plt.scatter(x, y)
+plt.plot(x, reg.predict(x), color='red', label='OLS')
+plt.legend()
+plt.show()
+
+# =====================================================
+# Assume m = 78.35 and b = 0
+# =====================================================
+m = 78.35
+b = 0
+
+y_pred = (m * x + b).reshape(4)
+
+plt.scatter(x, y)
+plt.plot(x, reg.predict(x), color='red', label='OLS')
+plt.plot(x, y_pred, color='green', label='b=0')
+plt.legend()
+plt.show()
+
+# =====================================================
+# Calculate Gradient for b
+# =====================================================
+loss_slope = -2 * np.sum(y - m * x.ravel() - b)
+
+print("Gradient:", loss_slope)
+
+# =====================================================
+# First Iteration
+# =====================================================
+lr = 0.1
+
+step_size = loss_slope * lr
+b = b - step_size
+
+print("Updated b:", b)
+
+y_pred1 = (m * x + b).reshape(4)
+
+plt.scatter(x, y)
+plt.plot(x, reg.predict(x), color='red', label='OLS')
+plt.plot(x, y_pred1, color='yellow', label=f'b={b:.2f}')
+plt.plot(x, y_pred, color='green', label='b=0')
+plt.legend()
+plt.show()
+
+# =====================================================
+# Second Iteration
+# =====================================================
+loss_slope = -2 * np.sum(y - m * x.ravel() - b)
+
+step_size = loss_slope * lr
+b = b - step_size
+
+y_pred2 = (m * x + b).reshape(4)
+
+plt.scatter(x, y)
+plt.plot(x, reg.predict(x), color='red', label='OLS')
+plt.plot(x, y_pred2, color='black', label=f'b={b:.2f}')
+plt.plot(x, y_pred1, color='green', label='Previous')
+plt.legend()
+plt.show()
+
+# =====================================================
+# Gradient Descent Class
+# =====================================================
+class GDRegressor:
+
+    def __init__(self, learning_rate, epochs):
+        self.m = 78.35
+        self.b = 0
+        self.lr = learning_rate
+        self.epochs = epochs
+
+        self.b_history = []
+        self.y_pred_history = []
+
+    def fit(self, x, y):
+
+        for i in range(self.epochs):
+
+            loss_slope = -2 * np.sum(
+                y - self.m * x.ravel() - self.b
+            )
+
+            self.b = self.b - (loss_slope * self.lr)
+
+            self.b_history.append(self.b)
+            self.y_pred_history.append(self.predict(x))
+
+    def predict(self, x):
+
+        return (
+            self.m * x + self.b
+        ).reshape(x.shape[0])
+
+# =====================================================
+# Train Gradient Descent Regressor
+# =====================================================
+gdr = GDRegressor(
+    learning_rate=0.1,
+    epochs=100
+)
+
+gdr.fit(x, y)
+
+print("Final b:", gdr.b)
+print("OLS b:", reg.intercept_)
+
+# =====================================================
+# Compare OLS vs Gradient Descent
+# =====================================================
+plt.figure(figsize=(10, 6))
+
+plt.scatter(
+    x,
+    y,
+    label='Data Points'
+)
+
+plt.plot(
+    x,
+    reg.predict(x),
+    color='red',
+    label='OLS Regression Line'
+)
+
+plt.plot(
+    x,
+    gdr.y_pred_history[0],
+    color='green',
+    label=f'Initial Line (b={gdr.b_history[0]:.2f})'
+)
+
+plt.plot(
+    x,
+    gdr.y_pred_history[-1],
+    color='purple',
+    linestyle='--',
+    label=f'Final GD Line (b={gdr.b_history[-1]:.2f})'
+)
+
+plt.title("Gradient Descent Convergence")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.legend()
+plt.grid(True)
+plt.show()
