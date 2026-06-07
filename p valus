@@ -1,0 +1,57 @@
+import numpy as np
+from sklearn.datasets import make_regression
+
+# Create Dataset
+x, y = make_regression(
+    n_samples=4,
+    n_features=1,
+    n_informative=1,
+    noise=80,
+    random_state=13
+)
+
+class GDRegressor:
+
+    def __init__(self, learning_rate=0.1, epochs=100):
+        self.m = 78.35      # Fixed Slope
+        self.b = 0          # Initial Intercept
+        self.lr = learning_rate
+        self.epochs = epochs
+
+    def fit(self, x, y):
+
+        for i in range(self.epochs):
+
+            # Step 1: Prediction
+            y_pred = self.m * x.ravel() + self.b
+
+            # Step 2: Gradient Calculation
+            gradient = -2 * np.sum(y - y_pred)
+
+            # Step 3: Update b
+            self.b = self.b - self.lr * gradient
+
+            print(
+                f"Epoch {i+1} | "
+                f"Gradient = {gradient:.4f} | "
+                f"b = {self.b:.4f}"
+            )
+
+    def predict(self, x):
+
+        return self.m * x.ravel() + self.b
+
+
+# Object Creation
+gd = GDRegressor(
+    learning_rate=0.1,
+    epochs=10
+)
+
+# Training
+gd.fit(x, y)
+
+# Prediction
+y_pred = gd.predict(x)
+
+print("\nFinal Intercept (b):", gd.b)
