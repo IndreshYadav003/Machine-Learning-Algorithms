@@ -1,0 +1,81 @@
+import numpy as np
+from sklearn.metrics import r2_score
+from sklearn.model_selection import train_test_split
+
+# Data
+X = np.array([
+    [6.5, 21, 1, 105],
+    [7.0, 22, 0, 110],
+    [7.2, 21, 1, 115],
+    [7.5, 23, 0, 120],
+    [8.0, 22, 1, 125],
+    [8.2, 23, 0, 130],
+    [8.5, 24, 1, 135],
+    [8.7, 23, 0, 140],
+    [9.0, 24, 1, 145],
+    [9.2, 25, 0, 150],
+    [7.8, 22, 1, 118],
+    [8.3, 23, 0, 132],
+    [6.8, 21, 1, 108],
+    [7.6, 22, 0, 122],
+    [8.8, 24, 1, 142]
+])
+
+y = np.array([
+    4.5,
+    5.0,
+    5.5,
+    6.0,
+    7.2,
+    7.8,
+    8.5,
+    9.0,
+    10.0,
+    11.0,
+    6.5,
+    8.0,
+    4.8,
+    6.8,
+    9.5
+])
+
+print("X shape:", X.shape)
+print("y shape:", y.shape)
+
+# Train-test split
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=2)
+
+# Custom Linear Regression class
+class MeraLR:
+    def __init__(self):
+        self.coef_ = None
+        self.intercept_ = None
+
+    def fit(self, X_train, y_train):
+        X_train = np.insert(X_train, 0, 1, axis=1) # Add column of 1s for intercept
+        betas = np.linalg.inv(X_train.T @ X_train) @ X_train.T @ y_train # Normal Equation
+        self.intercept_ = betas[0] # Store parameters
+        self.coef_ = betas[1:]
+
+    def predict(self, X_test):
+        y_pred = np.dot(X_test, self.coef_) + self.intercept_
+        return y_pred
+
+# Model instantiation, fitting, and prediction
+lr = MeraLR()
+lr.fit(X_train,y_train)
+r2_score(y_test,y_pred)
+lr.coef_
+lr.intercept_
+y = (
+    1.5 * 6+      # CGPA
+    0.1 * 22 +      # Age
+    0.3 * 1 +      # Gender
+    0.05 * 100 - 10  # IQ + intercept
+)
+print(y)#6.5
+
+
+
+
+y_pred = lr.predict(X_test)
